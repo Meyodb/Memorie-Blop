@@ -143,75 +143,74 @@ function showContextMenu(row, col, event) {
     
     // Mesurer le menu pour un positionnement précis
     contextMenu.style.display = 'flex';
-    const menuRect = contextMenu.getBoundingClientRect();
-    const menuWidth = menuRect.width;
-    const menuHeight = menuRect.height;
+    contextMenu.style.transform = 'rotate(90deg)';
+    contextMenu.style.transformOrigin = 'center center';
     
-    if (isMobile) {
-        // Sur mobile, centrer le menu à l'écran
-        const margin = isSmallMobile ? 8 : 10;
-        const viewportHeight = window.innerHeight;
-        const viewportWidth = window.innerWidth;
+    // Attendre un frame pour que le navigateur calcule les dimensions après rotation
+    requestAnimationFrame(() => {
+        const menuRect = contextMenu.getBoundingClientRect();
+        const menuWidth = menuRect.width; // Largeur après rotation
+        const menuHeight = menuRect.height; // Hauteur après rotation
         
-        // Limiter la largeur maximale
-        const maxMenuWidth = Math.min(300, viewportWidth - margin * 2);
-        
-        // Calculer la position verticale pour centrer
-        let calculatedTop = (viewportHeight - menuHeight) / 2;
-        
-        // S'assurer que le menu ne dépasse pas en haut ou en bas
-        if (calculatedTop < margin) {
-            calculatedTop = margin;
-        } else if (calculatedTop + menuHeight > viewportHeight - margin) {
-            calculatedTop = Math.max(margin, viewportHeight - menuHeight - margin);
+        if (isMobile) {
+            // Sur mobile, centrer le menu à l'écran
+            const margin = isSmallMobile ? 8 : 10;
+            const viewportHeight = window.innerHeight;
+            const viewportWidth = window.innerWidth;
+            
+            // Centrer horizontalement et verticalement
+            const left = (viewportWidth - menuWidth) / 2;
+            let calculatedTop = (viewportHeight - menuHeight) / 2;
+            
+            // S'assurer que le menu ne dépasse pas en haut ou en bas
+            if (calculatedTop < margin) {
+                calculatedTop = margin;
+            } else if (calculatedTop + menuHeight > viewportHeight - margin) {
+                calculatedTop = Math.max(margin, viewportHeight - menuHeight - margin);
+            }
+            
+            // Positionner par rapport à la fenêtre (position fixed)
+            contextMenu.style.position = 'fixed';
+            contextMenu.style.left = `${left}px`;
+            contextMenu.style.top = `${calculatedTop}px`;
+            contextMenu.style.width = '';
+            contextMenu.style.maxWidth = '';
+            contextMenu.classList.remove('arrow-left', 'arrow-right');
+        } else {
+            // Sur desktop, centrer le menu par rapport à la cellule
+            const cellRect = cell.getBoundingClientRect();
+            const containerRect = document.querySelector('.container').getBoundingClientRect();
+            
+            // Centrer le menu par rapport à la cellule
+            const cellCenterX = cellRect.left + cellRect.width / 2;
+            const cellCenterY = cellRect.top + cellRect.height / 2;
+            
+            let left = cellCenterX - menuWidth / 2;
+            let top = cellCenterY - menuHeight / 2;
+            
+            // Convertir en coordonnées relatives au container
+            left = left - containerRect.left;
+            top = top - containerRect.top;
+            
+            // Vérifier les limites du container
+            if (left < 10) left = 10;
+            if (left + menuWidth > containerRect.width - 10) {
+                left = containerRect.width - menuWidth - 10;
+            }
+            if (top < 10) top = 10;
+            if (top + menuHeight > containerRect.height - 10) {
+                top = containerRect.height - menuHeight - 10;
+            }
+            
+            // Positionner le menu (coordonnées relatives au container)
+            contextMenu.style.position = 'absolute';
+            contextMenu.style.left = `${left}px`;
+            contextMenu.style.top = `${top}px`;
+            contextMenu.style.width = '';
+            contextMenu.style.maxWidth = '';
+            contextMenu.classList.remove('arrow-left', 'arrow-right');
         }
-        
-        // Positionner par rapport à la fenêtre (position fixed)
-        const left = (viewportWidth - maxMenuWidth) / 2;
-        contextMenu.style.position = 'fixed';
-        contextMenu.style.left = `${left}px`;
-        contextMenu.style.top = `${calculatedTop}px`;
-        contextMenu.style.width = `${maxMenuWidth}px`;
-        contextMenu.style.maxWidth = `${maxMenuWidth}px`;
-        contextMenu.classList.remove('arrow-left', 'arrow-right');
-    } else {
-        // Sur desktop, positionner près de la cellule
-        const cellRect = cell.getBoundingClientRect();
-        const containerRect = document.querySelector('.container').getBoundingClientRect();
-        
-        // Positionner le menu à droite du pion par défaut
-        let left = cellRect.right + 15;
-        let top = cellRect.top + (cellRect.height / 2) - (menuHeight / 2);
-        let arrowPosition = 'left';
-        
-        // Vérifier si le menu sort de l'écran à droite
-        if (left + menuWidth > containerRect.right - 10) {
-            // Positionner à gauche du pion
-            left = cellRect.left - menuWidth - 15;
-            arrowPosition = 'right';
-        }
-        
-        // Vérifier si le menu sort en bas
-        if (top + menuHeight > containerRect.bottom - 10) {
-            top = containerRect.bottom - menuHeight - 10;
-        }
-        
-        // Vérifier si le menu sort en haut
-        if (top < containerRect.top + 10) {
-            top = containerRect.top + 10;
-        }
-        
-        // Ajuster la position de la flèche selon la position du menu
-        contextMenu.classList.remove('arrow-left', 'arrow-right');
-        contextMenu.classList.add(`arrow-${arrowPosition}`);
-        
-        // Positionner le menu (coordonnées relatives au container)
-        contextMenu.style.position = 'absolute';
-        contextMenu.style.left = `${left - containerRect.left}px`;
-        contextMenu.style.top = `${top - containerRect.top}px`;
-        contextMenu.style.width = '';
-        contextMenu.style.maxWidth = '';
-    }
+    });
 }
 
 // Masquer le menu contextuel
@@ -219,12 +218,14 @@ function hideContextMenu() {
     const contextMenu = document.getElementById('contextMenu');
     const mobileOverlay = document.getElementById('mobileOverlay');
     contextMenu.style.display = 'none';
-    // Réinitialiser le positionnement
+    // Réinitialiser le positionnement et la rotation
     contextMenu.style.position = '';
     contextMenu.style.left = '';
     contextMenu.style.top = '';
     contextMenu.style.width = '';
     contextMenu.style.maxWidth = '';
+    contextMenu.style.transform = '';
+    contextMenu.style.transformOrigin = '';
     if (mobileOverlay) {
         mobileOverlay.style.display = 'none';
         mobileOverlay.removeEventListener('click', hideContextMenu);
