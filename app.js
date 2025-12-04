@@ -507,14 +507,12 @@ function cancelAction() {
 
 // Gérer le reset
 function handleReset() {
-    if (confirm('Êtes-vous sûr de vouloir réinitialiser le tableau ?')) {
-        saveState();
-        state.board = Array(6).fill(null).map(() => Array(4).fill(null));
-        state.selectedPion = null;
-        hideContextMenu();
-        renderBoard();
-        saveState();
-    }
+    saveState();
+    state.board = Array(6).fill(null).map(() => Array(4).fill(null));
+    state.selectedPion = null;
+    hideContextMenu();
+    renderBoard();
+    saveState();
 }
 
 // Gérer l'undo

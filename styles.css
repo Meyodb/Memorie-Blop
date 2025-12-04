@@ -254,6 +254,7 @@ header h1 {
     pointer-events: none;
     user-select: none;
     -webkit-user-drag: none;
+    transform: rotate(90deg);
 }
 
 .selection-actions {
@@ -561,27 +562,28 @@ header h1 {
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
     user-select: none;
     -webkit-user-drag: none;
+    transform: rotate(90deg);
 }
 
 .pion:hover {
-    transform: scale(1.1);
+    transform: rotate(90deg) scale(1.1);
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.7)) brightness(1.1);
 }
 
 .pion.small {
-    width: clamp(25px, 6vw, 35px);
+    width: clamp(50px, 10vw, 70px);
     height: auto;
     max-width: 100%;
 }
 
 .pion.medium {
-    width: clamp(40px, 9vw, 55px);
+    width: clamp(75px, 15vw, 100px);
     height: auto;
     max-width: 100%;
 }
 
 .pion.large {
-    width: clamp(55px, 12vw, 75px);
+    width: clamp(100px, 20vw, 140px);
     height: auto;
     max-width: 100%;
 }
@@ -902,17 +904,17 @@ header h1 {
     }
 
     .pion.small {
-        width: clamp(25px, 6vw, 35px);
+        width: clamp(45px, 9vw, 65px);
         height: auto;
     }
 
     .pion.medium {
-        width: clamp(40px, 9vw, 55px);
+        width: clamp(65px, 13vw, 90px);
         height: auto;
     }
 
     .pion.large {
-        width: clamp(55px, 12vw, 75px);
+        width: clamp(90px, 18vw, 120px);
         height: auto;
     }
 
@@ -1058,17 +1060,17 @@ header h1 {
     }
 
     .pion.small {
-        width: clamp(22px, 5.5vw, 30px);
+        width: clamp(40px, 8vw, 60px);
         height: auto;
     }
 
     .pion.medium {
-        width: clamp(35px, 8vw, 48px);
+        width: clamp(60px, 12vw, 85px);
         height: auto;
     }
 
     .pion.large {
-        width: clamp(48px, 10vw, 68px);
+        width: clamp(85px, 17vw, 115px);
         height: auto;
     }
 
