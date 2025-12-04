@@ -426,14 +426,14 @@ function showSelectionPanel(row, col, event) {
 
 // Sélectionner un pion et le placer
 function selectPion(row, col, color, size) {
-    saveState();
+    saveState(); // Sauvegarder l'état avant la modification
     state.board[row][col] = {
         color: color,
         size: size
     };
     hideSelectionPanel();
     renderBoard();
-    saveState();
+    saveToLocalStorage(); // Sauvegarder seulement dans localStorage
 }
 
 // Masquer le panneau de sélection
@@ -489,13 +489,13 @@ function clearHighlights() {
 // Gérer la suppression
 function handleDelete() {
     if (state.selectedPion) {
-        saveState();
+        saveState(); // Sauvegarder l'état avant la modification
         const { row, col } = state.selectedPion;
         state.board[row][col] = null;
         state.selectedPion = null;
         hideContextMenu();
         renderBoard();
-        saveState();
+        saveToLocalStorage(); // Sauvegarder seulement dans localStorage
     }
 }
 
@@ -507,24 +507,36 @@ function cancelAction() {
 
 // Gérer le reset
 function handleReset() {
-    saveState();
+    saveState(); // Sauvegarder l'état avant la modification
     state.board = Array(6).fill(null).map(() => Array(4).fill(null));
     state.selectedPion = null;
     hideContextMenu();
     renderBoard();
-    saveState();
+    saveToLocalStorage(); // Sauvegarder seulement dans localStorage
 }
 
 // Gérer l'undo
 function handleUndo() {
     if (state.history.length > 0) {
+        // Restaurer le dernier état de l'historique
         const previousState = state.history.pop();
-        state.board = previousState.board;
+        state.board = previousState.board.map(row => row.map(cell => cell ? { ...cell } : null));
+        
         state.selectedPion = null;
         hideContextMenu();
         renderBoard();
-        saveState();
+        // Sauvegarder dans localStorage mais ne pas ajouter à l'historique
+        saveToLocalStorage();
     }
+}
+
+// Sauvegarder dans localStorage uniquement
+function saveToLocalStorage() {
+    localStorage.setItem('pionBoardState', JSON.stringify({
+        board: state.board,
+        selectedColor: state.selectedColor,
+        selectedSize: state.selectedSize
+    }));
 }
 
 // Sauvegarder l'état actuel dans l'historique
@@ -539,11 +551,7 @@ function saveState() {
     }
     
     // Sauvegarder dans localStorage
-    localStorage.setItem('pionBoardState', JSON.stringify({
-        board: state.board,
-        selectedColor: state.selectedColor,
-        selectedSize: state.selectedSize
-    }));
+    saveToLocalStorage();
 }
 
 // Charger l'état depuis localStorage
@@ -662,11 +670,11 @@ function renderBoard() {
 
 // Sauvegarder automatiquement lors des changements
 window.addEventListener('beforeunload', () => {
-    saveState();
+    saveToLocalStorage();
 });
 
 // Sauvegarder périodiquement
 setInterval(() => {
-    saveState();
+    saveToLocalStorage();
 }, 5000);
 
