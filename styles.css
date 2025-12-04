@@ -852,8 +852,8 @@ header h1 {
     }
 
     .board {
-        gap: clamp(2px, 0.8vw, 4px);
-        padding: clamp(5px, 1.5vw, 10px);
+        gap: 1px;
+        padding: clamp(4px, 1.2vw, 8px);
         border-width: 2px;
     }
 
@@ -931,8 +931,8 @@ header h1 {
     }
 
     .board {
-        gap: 2px;
-        padding: clamp(4px, 1.2vw, 6px);
+        gap: 1px;
+        padding: clamp(3px, 1vw, 5px);
     }
 
     .controls-panel {
