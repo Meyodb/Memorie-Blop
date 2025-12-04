@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="description" content="Tableau de stratégie Dofus - Placez vos pions sur le plateau">
+    <title>Tableau de Pions - Dofus</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚔️ Tableau de Pions ⚔️</h1>
+        </header>
+
+        <!-- Overlay pour mobile -->
+        <div class="mobile-overlay" id="mobileOverlay" style="display: none;"></div>
+
+        <!-- Panneau de sélection contextuel avec images de pions -->
+        <div class="controls-panel" id="selectionPanel" style="display: none;">
+            <div class="pion-selection-grid" id="pionSelectionGrid">
+                <!-- Les images de pions seront générées par JavaScript -->
+            </div>
+            <div class="selection-actions">
+                <button class="selection-cancel-btn" id="cancelSelectionBtn">Annuler</button>
+            </div>
+        </div>
+
+        <div class="board-container">
+            <div class="board" id="board">
+                <!-- Les cellules seront générées par JavaScript -->
+            </div>
+        </div>
+
+        <!-- Menu contextuel pour les actions sur les pions -->
+        <div class="context-menu" id="contextMenu" style="display: none;">
+            <button class="context-menu-btn move-btn" id="moveBtn">Déplacer</button>
+            <button class="context-menu-btn delete-btn" id="deleteBtn">Supprimer</button>
+            <button class="context-menu-btn cancel-btn" id="cancelBtn">Annuler</button>
+        </div>
+
+        <div class="bottom-controls">
+            <button class="control-btn reset-btn" id="resetBtn">Reset</button>
+            <button class="control-btn undo-btn" id="undoBtn">Undo</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Enregistrer le Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(reg => console.log('Service Worker enregistré'))
+                    .catch(err => console.log('Erreur Service Worker:', err));
+            });
+        }
+    </script>
+</body>
+</html>
+

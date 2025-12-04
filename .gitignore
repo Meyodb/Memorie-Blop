@@ -1,0 +1,29 @@
+# Fichiers système
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+
+# Dossiers temporaires
+.cache/
+tmp/
+temp/
+
+# Éditeurs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Node modules (si ajouté plus tard)
+node_modules/
+
+# Fichiers de build
+dist/
+build/
+
