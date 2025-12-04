@@ -414,6 +414,7 @@ header h1 {
 .board-container {
     display: flex;
     justify-content: center;
+    align-items: center;
     margin-bottom: clamp(8px, 2vw, 12px);
     padding: 0;
     flex: 1;
@@ -441,6 +442,7 @@ header h1 {
     aspect-ratio: 2/3;
     min-height: 0;
     position: relative;
+    box-sizing: border-box;
     /* Grille visible */
     background-image: 
         repeating-linear-gradient(0deg, rgba(99, 102, 241, 0.1) 0px, rgba(99, 102, 241, 0.1) 1px, transparent 1px, transparent calc(100% / 4)),
@@ -460,6 +462,9 @@ header h1 {
     transition: all 0.2s ease;
     position: relative;
     min-width: 0;
+    width: 100%;
+    height: auto;
+    box-sizing: border-box;
     box-shadow: 
         inset 0 1px 2px rgba(0, 0, 0, 0.5),
         0 0 0 1px rgba(99, 102, 241, 0.1);
@@ -792,6 +797,7 @@ header h1 {
         border-radius: 10px;
         border-width: 2px;
         max-height: calc(100vh - 6px);
+        justify-content: flex-start;
     }
 
     header {
@@ -851,14 +857,30 @@ header h1 {
         min-height: 44px;
     }
 
+    .board-container {
+        flex: 0 1 auto;
+        max-width: min(90%, 400px);
+        margin: 0 auto clamp(8px, 2vw, 12px);
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
     .board {
-        gap: 1px;
-        padding: clamp(4px, 1.2vw, 8px);
+        gap: 0px !important;
+        padding: clamp(2px, 0.8vw, 4px);
         border-width: 2px;
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        aspect-ratio: 2/3;
+        flex-shrink: 0;
     }
 
     .cell {
         min-height: 0;
+        border-width: 0.5px;
+        border-radius: 2px;
     }
 
     .pion.small {
@@ -930,9 +952,28 @@ header h1 {
         font-size: clamp(1rem, 3.5vw, 1.3rem);
     }
 
+    .board-container {
+        flex: 0 1 auto;
+        max-width: min(85%, 350px);
+        margin: 0 auto clamp(6px, 1.5vw, 10px);
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
     .board {
-        gap: 1px;
-        padding: clamp(3px, 1vw, 5px);
+        gap: 0px !important;
+        padding: clamp(1px, 0.6vw, 3px);
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        aspect-ratio: 2/3;
+        flex-shrink: 0;
+    }
+
+    .cell {
+        border-width: 0.5px;
+        border-radius: 2px;
     }
 
     .controls-panel {
@@ -1052,10 +1093,19 @@ header h1 {
 
 /* Orientation paysage sur mobile */
 @media (max-width: 768px) and (orientation: landscape) {
+    .board-container {
+        max-width: min(70%, 500px);
+    }
+
     .board {
-        grid-template-columns: repeat(6, 1fr);
-        grid-template-rows: repeat(4, 1fr);
-        aspect-ratio: 3/2;
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: repeat(6, 1fr);
+        gap: 0px !important;
+        aspect-ratio: 2/3;
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        flex-shrink: 0;
     }
 
     .controls-panel {
