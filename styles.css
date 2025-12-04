@@ -4,6 +4,13 @@
     box-sizing: border-box;
 }
 
+html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow-x: hidden;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     /* Fond sombre inspiré de Dofzel/Dofus */
@@ -21,6 +28,7 @@ body {
     overflow-y: hidden;
     display: flex;
     flex-direction: column;
+    margin: 0;
 }
 
 body::before {
@@ -789,15 +797,25 @@ header h1 {
 /* Media Queries pour Mobile et Responsive */
 @media (max-width: 768px) {
     body {
-        padding: 3px;
+        padding: 0;
+        margin: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
     }
 
     .container {
         padding: clamp(6px, 1.5vw, 10px);
-        border-radius: 10px;
-        border-width: 2px;
-        max-height: calc(100vh - 6px);
+        border-radius: 0;
+        border-width: 0;
+        border-left: none;
+        border-right: none;
+        max-width: 100%;
+        width: 100%;
+        margin: 0;
+        max-height: 100vh;
+        height: 100vh;
         justify-content: flex-start;
+        box-sizing: border-box;
     }
 
     header {
@@ -943,9 +961,23 @@ header h1 {
 }
 
 @media (max-width: 480px) {
+    body {
+        padding: 0;
+        margin: 0;
+    }
+
     .container {
         padding: clamp(5px, 1.2vw, 8px);
-        max-height: calc(100vh - 6px);
+        border-radius: 0;
+        border-width: 0;
+        border-left: none;
+        border-right: none;
+        max-width: 100%;
+        width: 100%;
+        margin: 0;
+        max-height: 100vh;
+        height: 100vh;
+        box-sizing: border-box;
     }
 
     header h1 {
