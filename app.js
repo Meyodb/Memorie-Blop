@@ -4,7 +4,6 @@ let state = {
     selectedSize: 'small',
     board: Array(6).fill(null).map(() => Array(4).fill(null)),
     history: [],
-    moveMode: false,
     selectedPion: null,
     pendingCell: null // Cellule en attente de placement
 };
@@ -38,10 +37,6 @@ function initializeBoard() {
 function setupEventListeners() {
 
     // Boutons d'action du menu contextuel
-    document.getElementById('moveBtn').addEventListener('click', (e) => {
-        e.stopPropagation();
-        handleMove();
-    });
     document.getElementById('deleteBtn').addEventListener('click', (e) => {
         e.stopPropagation();
         handleDelete();
@@ -62,10 +57,7 @@ function setupEventListeners() {
         // Ne pas fermer si on clique sur les menus ou sur une cellule avec un pion
         if (contextMenu && contextMenu.style.display !== 'none') {
             if (!contextMenu.contains(e.target) && !cell) {
-                // Ne pas fermer si on est en mode déplacement
-                if (!state.moveMode) {
-                    hideContextMenu();
-                }
+                hideContextMenu();
             }
         }
         
@@ -87,24 +79,6 @@ function setupEventListeners() {
 
 // Gérer le clic sur une cellule
 function handleCellClick(row, col, event) {
-    if (state.moveMode && state.selectedPion) {
-        // Mode déplacement : déplacer le pion
-        const oldRow = state.selectedPion.row;
-        const oldCol = state.selectedPion.col;
-        
-        if (state.board[row][col] === null) {
-            saveState();
-            state.board[row][col] = state.board[oldRow][oldCol];
-            state.board[oldRow][oldCol] = null;
-            state.moveMode = false;
-            state.selectedPion = null;
-            hideContextMenu();
-            renderBoard();
-            saveState();
-        }
-        return;
-    }
-
     // Si un pion existe déjà dans cette cellule
     if (state.board[row][col] !== null) {
         // Fermer le panneau de sélection s'il est ouvert
@@ -152,12 +126,20 @@ function handleCellClick(row, col, event) {
 function showContextMenu(row, col, event) {
     const contextMenu = document.getElementById('contextMenu');
     const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+    const mobileOverlay = document.getElementById('mobileOverlay');
     
     if (!cell) return;
     
-    // Obtenir la position de la cellule
-    const cellRect = cell.getBoundingClientRect();
-    const containerRect = document.querySelector('.container').getBoundingClientRect();
+    const isMobile = window.innerWidth <= 768;
+    const isSmallMobile = window.innerWidth <= 480;
+    
+    // Afficher l'overlay sur mobile
+    if (isMobile && mobileOverlay) {
+        mobileOverlay.style.display = 'block';
+        mobileOverlay.addEventListener('click', hideContextMenu);
+    } else if (mobileOverlay) {
+        mobileOverlay.style.display = 'none';
+    }
     
     // Mesurer le menu pour un positionnement précis
     contextMenu.style.display = 'flex';
@@ -165,41 +147,88 @@ function showContextMenu(row, col, event) {
     const menuWidth = menuRect.width;
     const menuHeight = menuRect.height;
     
-    // Positionner le menu à droite du pion par défaut
-    let left = cellRect.right + 15;
-    let top = cellRect.top + (cellRect.height / 2) - (menuHeight / 2);
-    let arrowPosition = 'left'; // Position de la flèche
-    
-    // Vérifier si le menu sort de l'écran à droite
-    if (left + menuWidth > containerRect.right - 10) {
-        // Positionner à gauche du pion
-        left = cellRect.left - menuWidth - 15;
-        arrowPosition = 'right';
+    if (isMobile) {
+        // Sur mobile, centrer le menu à l'écran
+        const margin = isSmallMobile ? 8 : 10;
+        const viewportHeight = window.innerHeight;
+        const viewportWidth = window.innerWidth;
+        
+        // Limiter la largeur maximale
+        const maxMenuWidth = Math.min(300, viewportWidth - margin * 2);
+        
+        // Calculer la position verticale pour centrer
+        let calculatedTop = (viewportHeight - menuHeight) / 2;
+        
+        // S'assurer que le menu ne dépasse pas en haut ou en bas
+        if (calculatedTop < margin) {
+            calculatedTop = margin;
+        } else if (calculatedTop + menuHeight > viewportHeight - margin) {
+            calculatedTop = Math.max(margin, viewportHeight - menuHeight - margin);
+        }
+        
+        // Positionner par rapport à la fenêtre (position fixed)
+        const left = (viewportWidth - maxMenuWidth) / 2;
+        contextMenu.style.position = 'fixed';
+        contextMenu.style.left = `${left}px`;
+        contextMenu.style.top = `${calculatedTop}px`;
+        contextMenu.style.width = `${maxMenuWidth}px`;
+        contextMenu.style.maxWidth = `${maxMenuWidth}px`;
+        contextMenu.classList.remove('arrow-left', 'arrow-right');
+    } else {
+        // Sur desktop, positionner près de la cellule
+        const cellRect = cell.getBoundingClientRect();
+        const containerRect = document.querySelector('.container').getBoundingClientRect();
+        
+        // Positionner le menu à droite du pion par défaut
+        let left = cellRect.right + 15;
+        let top = cellRect.top + (cellRect.height / 2) - (menuHeight / 2);
+        let arrowPosition = 'left';
+        
+        // Vérifier si le menu sort de l'écran à droite
+        if (left + menuWidth > containerRect.right - 10) {
+            // Positionner à gauche du pion
+            left = cellRect.left - menuWidth - 15;
+            arrowPosition = 'right';
+        }
+        
+        // Vérifier si le menu sort en bas
+        if (top + menuHeight > containerRect.bottom - 10) {
+            top = containerRect.bottom - menuHeight - 10;
+        }
+        
+        // Vérifier si le menu sort en haut
+        if (top < containerRect.top + 10) {
+            top = containerRect.top + 10;
+        }
+        
+        // Ajuster la position de la flèche selon la position du menu
+        contextMenu.classList.remove('arrow-left', 'arrow-right');
+        contextMenu.classList.add(`arrow-${arrowPosition}`);
+        
+        // Positionner le menu (coordonnées relatives au container)
+        contextMenu.style.position = 'absolute';
+        contextMenu.style.left = `${left - containerRect.left}px`;
+        contextMenu.style.top = `${top - containerRect.top}px`;
+        contextMenu.style.width = '';
+        contextMenu.style.maxWidth = '';
     }
-    
-    // Vérifier si le menu sort en bas
-    if (top + menuHeight > containerRect.bottom - 10) {
-        top = containerRect.bottom - menuHeight - 10;
-    }
-    
-    // Vérifier si le menu sort en haut
-    if (top < containerRect.top + 10) {
-        top = containerRect.top + 10;
-    }
-    
-    // Ajuster la position de la flèche selon la position du menu
-    contextMenu.classList.remove('arrow-left', 'arrow-right');
-    contextMenu.classList.add(`arrow-${arrowPosition}`);
-    
-    // Positionner le menu
-    contextMenu.style.left = `${left - containerRect.left}px`;
-    contextMenu.style.top = `${top - containerRect.top}px`;
 }
 
 // Masquer le menu contextuel
 function hideContextMenu() {
     const contextMenu = document.getElementById('contextMenu');
+    const mobileOverlay = document.getElementById('mobileOverlay');
     contextMenu.style.display = 'none';
+    // Réinitialiser le positionnement
+    contextMenu.style.position = '';
+    contextMenu.style.left = '';
+    contextMenu.style.top = '';
+    contextMenu.style.width = '';
+    contextMenu.style.maxWidth = '';
+    if (mobileOverlay) {
+        mobileOverlay.style.display = 'none';
+        mobileOverlay.removeEventListener('click', hideContextMenu);
+    }
     clearHighlights();
 }
 
@@ -287,15 +316,45 @@ function showSelectionPanel(row, col, event) {
         let left, top, arrowPosition = 'top';
         
         if (isMobile) {
-            // Sur mobile, centrer le panneau à l'écran
+            // Sur mobile, centrer le panneau à l'écran (position absolue par rapport à la fenêtre)
             const margin = isSmallMobile ? 8 : 10;
+            const viewportHeight = window.innerHeight;
+            const viewportWidth = window.innerWidth;
+            
+            // Calculer la position verticale pour centrer, mais s'assurer qu'il reste dans la vue
+            let calculatedTop = (viewportHeight - panelHeight) / 2;
+            
+            // S'assurer que le panneau ne dépasse pas en haut ou en bas
+            if (calculatedTop < margin) {
+                calculatedTop = margin;
+            } else if (calculatedTop + panelHeight > viewportHeight - margin) {
+                calculatedTop = Math.max(margin, viewportHeight - panelHeight - margin);
+            }
+            
+            // Positionner par rapport à la fenêtre, pas au container
             left = margin;
-            top = Math.max(margin, (containerRect.height - panelHeight) / 2);
+            top = calculatedTop;
             arrowPosition = 'none';
             
-            // Ajuster la largeur pour mobile
-            selectionPanel.style.width = `calc(100% - ${margin * 2}px)`;
-            selectionPanel.style.maxWidth = `calc(100vw - ${margin * 2}px)`;
+            // Ajuster la largeur et hauteur pour mobile
+            // Limiter la largeur maximale pour éviter que le panneau soit trop large
+            const maxPanelWidth = Math.min(400, viewportWidth - margin * 2);
+            selectionPanel.style.width = `${maxPanelWidth}px`;
+            selectionPanel.style.maxWidth = `${maxPanelWidth}px`;
+            selectionPanel.style.maxHeight = `calc(100vh - ${margin * 2}px)`;
+            
+            // Recalculer la position horizontale pour centrer
+            left = (viewportWidth - maxPanelWidth) / 2;
+            
+            // Positionner par rapport à la fenêtre (position fixed)
+            selectionPanel.style.position = 'fixed';
+            selectionPanel.style.left = `${left}px`;
+            selectionPanel.style.top = `${top}px`;
+            selectionPanel.style.right = 'auto';
+            selectionPanel.style.visibility = 'visible';
+            selectionPanel.style.opacity = '1';
+            selectionPanel.classList.remove('arrow-top', 'arrow-bottom', 'arrow-none');
+            return; // Sortir de la fonction pour éviter le positionnement desktop
         } else {
             // Sur desktop, positionner près de la cellule
             // Convertir les coordonnées de la fenêtre en coordonnées relatives au container
@@ -331,16 +390,18 @@ function showSelectionPanel(row, col, event) {
             // Réinitialiser la largeur pour desktop
             selectionPanel.style.width = '';
             selectionPanel.style.maxWidth = '';
-        }
-        
-        // Positionner le panneau (coordonnées relatives au container)
-        selectionPanel.style.left = `${left}px`;
-        selectionPanel.style.top = `${top}px`;
-        selectionPanel.style.visibility = 'visible';
-        selectionPanel.style.opacity = '1';
-        selectionPanel.classList.remove('arrow-top', 'arrow-bottom', 'arrow-none');
-        if (arrowPosition !== 'none') {
-            selectionPanel.classList.add(`arrow-${arrowPosition}`);
+            selectionPanel.style.maxHeight = '';
+            selectionPanel.style.position = 'absolute'; // Position absolue par rapport au container
+            
+            // Positionner le panneau (coordonnées relatives au container pour desktop)
+            selectionPanel.style.left = `${left}px`;
+            selectionPanel.style.top = `${top}px`;
+            selectionPanel.style.visibility = 'visible';
+            selectionPanel.style.opacity = '1';
+            selectionPanel.classList.remove('arrow-top', 'arrow-bottom', 'arrow-none');
+            if (arrowPosition !== 'none') {
+                selectionPanel.classList.add(`arrow-${arrowPosition}`);
+            }
         }
     };
     
@@ -380,6 +441,14 @@ function hideSelectionPanel() {
     const selectionPanel = document.getElementById('selectionPanel');
     const mobileOverlay = document.getElementById('mobileOverlay');
     selectionPanel.style.display = 'none';
+    // Réinitialiser le positionnement
+    selectionPanel.style.position = '';
+    selectionPanel.style.left = '';
+    selectionPanel.style.top = '';
+    selectionPanel.style.right = '';
+    selectionPanel.style.width = '';
+    selectionPanel.style.maxWidth = '';
+    selectionPanel.style.maxHeight = '';
     if (mobileOverlay) {
         mobileOverlay.style.display = 'none';
         mobileOverlay.removeEventListener('click', hideSelectionPanel);
@@ -417,15 +486,6 @@ function clearHighlights() {
     });
 }
 
-// Gérer le déplacement
-function handleMove() {
-    if (state.selectedPion) {
-        state.moveMode = true;
-        hideContextMenu();
-        // Le prochain clic sur une cellule déplacera le pion
-    }
-}
-
 // Gérer la suppression
 function handleDelete() {
     if (state.selectedPion) {
@@ -442,7 +502,6 @@ function handleDelete() {
 // Annuler l'action
 function cancelAction() {
     state.selectedPion = null;
-    state.moveMode = false;
     hideContextMenu();
 }
 
@@ -452,7 +511,6 @@ function handleReset() {
         saveState();
         state.board = Array(6).fill(null).map(() => Array(4).fill(null));
         state.selectedPion = null;
-        state.moveMode = false;
         hideContextMenu();
         renderBoard();
         saveState();
@@ -465,7 +523,6 @@ function handleUndo() {
         const previousState = state.history.pop();
         state.board = previousState.board;
         state.selectedPion = null;
-        state.moveMode = false;
         hideContextMenu();
         renderBoard();
         saveState();
